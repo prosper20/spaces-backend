@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
+     "migrate": "prisma db push --schema prisma/schema.prisma",
+    "dev": "npm run migrate && nodemon src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },

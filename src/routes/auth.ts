@@ -1,9 +1,11 @@
 import express, { Router } from "express";
-import { handleLogout, handlePersistentLogin, handleRefreshToken, loginUser, registerNewUser } from "../controllers/authController";
+import { handleLogout, handlePersistentLogin, handleRefreshToken, loginUser, registerNewUser, verifyOtpAndCreateUser } from "../controllers/authController";
 
 const authRouter: Router = express.Router();
 
 authRouter.post("/signup", registerNewUser);
+
+authRouter.post("/signup/verify", verifyOtpAndCreateUser);
 
 authRouter.post("/login", loginUser);
 
