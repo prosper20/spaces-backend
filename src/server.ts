@@ -48,9 +48,13 @@ const startServer = () => {
   }
 };
 
-if (redisClient.connected) startServer(); else {
-  console.error("Failed to start server; redis connection failed");
-}
+startServer();
+
+// if (redisClient.connected) {
+//   startServer();
+// } else {
+//   console.error("Failed to start server; redis connection failed");
+// }
 
 
 const activeUsers = new Set<string>();
