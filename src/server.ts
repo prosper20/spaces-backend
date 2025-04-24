@@ -21,11 +21,13 @@ const io = new Server(server, {
       "https://spaces-frontend-lovat.vercel.app",
       "http://localhost:3000",
     ],
+    credentials: true,
   },
 });
 
 app.use(credentials);
 app.use(cors<Request>(corsOptions));
+app.options("*", cors(corsOptions)); 
 app.use(express.json());
 app.use(cookieParser());
 
