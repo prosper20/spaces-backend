@@ -14,6 +14,9 @@ import { redisClient } from "./lib/redis";
 const PORT = 3000;
 const app = express();
 const server = http.createServer(app);
+app.use(express.json());
+
+app.use(cors(corsOptions));
 const io = new Server(server, {
   cors: {
     origin: [
@@ -21,13 +24,21 @@ const io = new Server(server, {
       "https://spaces-frontend-lovat.vercel.app",
       "http://localhost:3000",
     ],
+    methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+    credentials: true
   },
 });
 
+// app.use(cors({
+//   origin: "http://localhost:3002", // your frontend origin
+//   credentials: true, // allow cookies/auth headers
+// }));
+
 app.use(credentials);
 app.use(cors<Request>(corsOptions));
-app.use(express.json());
 app.use(cookieParser());
+
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
