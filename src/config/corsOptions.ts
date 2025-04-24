@@ -10,6 +10,8 @@ export const corsOptions: CorsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
   credentials: true, // Allow cookies to be sent cross-origin
   optionsSuccessStatus: 200,
 };
