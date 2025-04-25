@@ -1,18 +1,18 @@
-import express, { Router } from "express";
+import { Router } from 'express';
 import { handleLogout, handlePersistentLogin, handleRefreshToken, loginUser, registerNewUser, verifyOtpAndCreateUser } from "../controllers/authController";
 
-const authRouter: Router = express.Router();
+const authRouter = Router();
 
-authRouter.post("/signup", registerNewUser);
+authRouter.post("/auth/signup", registerNewUser);
 
-authRouter.post("/signup/verify", verifyOtpAndCreateUser);
+authRouter.post("/auth/signup/verify", verifyOtpAndCreateUser);
 
-authRouter.post("/login", loginUser);
+authRouter.post("/auth/login", loginUser);
 
-authRouter.get("/refresh", handleRefreshToken);
+authRouter.get("/auth/refresh", handleRefreshToken);
 
-authRouter.get("/login/persist", handlePersistentLogin);
+authRouter.get("/auth/login/persist", handlePersistentLogin);
 
-authRouter.post("/logout", handleLogout);
+authRouter.post("/auth/logout", handleLogout);
 
 export default authRouter;

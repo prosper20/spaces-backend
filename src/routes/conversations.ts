@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import { Router } from "express";
 import {
   getAllConversations,
   newConversation,
@@ -6,12 +6,12 @@ import {
 } from "../controllers/conversationsController";
 import { verifyJWT } from "../middleware/verifyJWT";
 
-const conversationsRouter: Router = express.Router();
+const conversationsRouter: Router = Router();
 
-conversationsRouter.post("/new", verifyJWT, newConversation);
+conversationsRouter.post("/conversations/new", verifyJWT, newConversation);
 
-conversationsRouter.get("/:userId", verifyJWT, getAllConversations);
+conversationsRouter.get("/conversations/:userId", verifyJWT, getAllConversations);
 
-conversationsRouter.put("/:conversationId/read", verifyJWT, readConversation);
+conversationsRouter.put("/conversations/:conversationId/read", verifyJWT, readConversation);
 
 export default conversationsRouter;
