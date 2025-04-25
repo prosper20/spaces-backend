@@ -62,28 +62,67 @@ var WebServer = /** @class */ (function () {
         return (0, express_1.default)();
     };
     WebServer.prototype.configureExpress = function (config) {
+        // Handle preflight requests first
+        this.express.options('*', (0, cors_1.default)({
+            origin: config.allowedOrigins,
+            credentials: true,
+            optionsSuccessStatus: 200
+        }));
+        // Then apply CORS middleware for all other requests
+        this.express.use((0, cors_1.default)({
+            origin: function (origin, callback) {
+                // Allow requests with no origin (like mobile apps or curl requests)
+                if (!origin)
+                    return callback(null, true);
+                if (config.allowedOrigins.includes(origin)) {
+                    callback(null, true);
+                }
+                else {
+                    console.log('CORS blocked for origin:', origin);
+                    callback(new Error('Not allowed by CORS'), false);
+                }
+            },
+            credentials: true,
+            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+            optionsSuccessStatus: 200,
+        }));
         this.express.use(function (req, res, next) {
+            // Always set these headers for allowed origins
             var origin = req.headers.origin;
-            if (config.allowedOrigins.includes(origin)) {
-                res.header("Access-Control-Allow-Credentials", "true");
+            if (origin && config.allowedOrigins.includes(origin)) {
+                res.header('Access-Control-Allow-Credentials', 'true');
+                res.header('Access-Control-Allow-Origin', origin);
             }
             next();
         });
-        this.express.use((0, cors_1.default)({
-            origin: function (origin, callback) {
-                if (config.allowedOrigins.indexOf(origin) !== -1 || !origin) {
-                    callback(null, origin);
-                }
-                else {
-                    console.log(origin);
-                    callback(new Error("Not allowed by CORS"), false);
-                }
-            },
-            optionsSuccessStatus: 200,
-        }));
         this.express.use(express_1.default.json());
         this.express.use((0, cookie_parser_1.default)());
     };
+    // private configureExpress(config: WebServerConfig) {
+    //   this.express.use((req: Request, res: Response, next: NextFunction) => {
+    //     const origin = req.headers.origin as string;
+    //     if (config.allowedOrigins.includes(origin)) {
+    //       res.header("Access-Control-Allow-Credentials", "true");
+    //     }
+    //     next();
+    //   });
+    //   this.express.use(
+    //     cors<Request>({
+    //       origin: (origin: string | undefined, callback) => {
+    //         if (config.allowedOrigins.indexOf(origin!) !== -1 || !origin) {
+    //           callback(null, origin);
+    //         } else {
+    //           console.log(origin);
+    //           callback(new Error("Not allowed by CORS"), false);
+    //         }
+    //       },
+    //       optionsSuccessStatus: 200,
+    //     }),
+    //   );
+    //   this.express.use(express.json());
+    //   this.express.use(cookieParser());
+    // }
     WebServer.prototype.setupRoutes = function () {
         var _this = this;
         this.routers.forEach(function (router) {
@@ -94,6 +133,7 @@ var WebServer = /** @class */ (function () {
         this.io = new socket_io_1.default.Server(this.server, {
             cors: {
                 origin: config.allowedOrigins,
+                credentials: true,
             },
         });
     };
