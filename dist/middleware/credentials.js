@@ -1,13 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.credentials = void 0;
-var allowedOrigins_1 = require("../config/allowedOrigins");
-var credentials = function (req, res, next) {
-    var origin = req.headers.origin;
-    if (allowedOrigins_1.allowedOrigins.includes(origin)) {
-        res.header("Access-Control-Allow-Credentials", "true");
-    }
-    next();
-};
-exports.credentials = credentials;
+// import { NextFunction, Request, Response } from "express";
+// import { allowedOrigins } from "../config/allowedOrigins";
+// export const credentials = (req: Request, res: Response, next: NextFunction) => {
+//   const origin = req.headers.origin as string;
+//   if (allowedOrigins.includes(origin)) {
+//     res.header("Access-Control-Allow-Credentials", "true");
+//   }
+//   next();
+// };
 //# sourceMappingURL=credentials.js.map
