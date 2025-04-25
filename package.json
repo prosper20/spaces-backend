@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "clean": "rimraf ./dist",
     "migrate": "prisma db push --schema prisma/schema.prisma",
     "dev": "npm run migrate && nodemon src/index.ts",
-    "build": "tsc",
+    "build": "npm run clean && tsc",
     "start": "node dist/index.js"
   },
   "keywords": [],
@@ -23,6 +24,7 @@
     "@types/socket.io": "^3.0.2",
     "nodemon": "^2.0.22",
     "prisma": "^4.12.0",
+    "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.3"
   },
