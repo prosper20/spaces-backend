@@ -13,11 +13,44 @@ export const createTask = async (req: Request, res: Response) => {
         groupId,
       },
       include: {
-        assignee: true,
+        assignee: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            profile_picture: true,
+          },
+        },
       },
     });
     res.status(201).json(task);
   } catch (err) {
     res.status(500).json({ message: "Failed to create task", error: err });
+  }
+};
+
+export const getTasksByUser = async (req: Request, res: Response) => {
+  const userId = req.userId;
+
+  try {
+    const tasks = await db.task.findMany({
+      where: {
+        assigneeId: userId,
+      },
+      include: {
+        group: true,
+        assignee: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            profile_picture: true,
+          },
+        },
+      },
+    });
+    res.status(200).json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch tasks", error: err });
   }
 };

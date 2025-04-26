@@ -42,7 +42,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("./lib/redis");
 var auth_1 = __importDefault(require("./routes/auth"));
 var conversations_1 = __importDefault(require("./routes/conversations"));
+var groupRouter_1 = __importDefault(require("./routes/groupRouter"));
 var messages_1 = __importDefault(require("./routes/messages"));
+var projectRouter_1 = __importDefault(require("./routes/projectRouter"));
+var taskRouter_1 = __importDefault(require("./routes/taskRouter"));
 var users_1 = __importDefault(require("./routes/users"));
 var webServer_1 = require("./webServer");
 var port = parseInt(process.env.PORT || '3000', 10);
@@ -60,6 +63,9 @@ var server = new webServer_1.WebServer({
 }, [
     auth_1.default,
     users_1.default,
+    groupRouter_1.default,
+    taskRouter_1.default,
+    projectRouter_1.default,
     conversations_1.default,
     messages_1.default,
 ]);

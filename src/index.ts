@@ -2,7 +2,10 @@ import "./lib/redis";
 
 import authRouter from "./routes/auth";
 import conversationsRouter from "./routes/conversations";
+import groupRouter from "./routes/groupRouter";
 import messagesRouter from "./routes/messages";
+import projectRouter from "./routes/projectRouter";
+import taskRouter from "./routes/taskRouter";
 import usersRouter from "./routes/users";
 import { WebServer } from "./webServer";
 
@@ -24,6 +27,9 @@ const server = new WebServer({
 }, [
   authRouter,
   usersRouter,
+  groupRouter,
+  taskRouter,
+  projectRouter,
   conversationsRouter,
   messagesRouter,
 ]);

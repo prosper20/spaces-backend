@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createProject = void 0;
+exports.getProjectsByUser = exports.createProject = void 0;
 var db_1 = require("../db");
 var createProject = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, title, description, groupId, dueDate, module, assigneeIds, project, err_1;
@@ -59,7 +59,19 @@ var createProject = function (req, res) { return __awaiter(void 0, void 0, void 
                                 connect: assigneeIds.map(function (id) { return ({ id: id }); }),
                             },
                         },
-                        include: { assignees: true },
+                        include: {
+                            assignees: {
+                                select: {
+                                    id: true,
+                                    fullName: true,
+                                    email: true,
+                                    profile_picture: true,
+                                    created_at: true,
+                                    updated_at: true,
+                                },
+                            },
+                            group: true,
+                        },
                     })];
             case 2:
                 project = _b.sent();
@@ -74,4 +86,68 @@ var createProject = function (req, res) { return __awaiter(void 0, void 0, void 
     });
 }); };
 exports.createProject = createProject;
+var getProjectsByUser = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, projects, err_2;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                userId = req.userId;
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, db_1.db.project.findMany({
+                        where: {
+                            assignees: {
+                                some: { id: userId },
+                            },
+                        },
+                        include: {
+                            assignees: {
+                                select: {
+                                    id: true,
+                                    fullName: true,
+                                    email: true,
+                                    profile_picture: true,
+                                    created_at: true,
+                                    updated_at: true,
+                                },
+                            },
+                            group: true,
+                        },
+                    })];
+            case 2:
+                projects = _a.sent();
+                res.status(200).json(projects);
+                return [3 /*break*/, 4];
+            case 3:
+                err_2 = _a.sent();
+                res.status(500).json({ message: "Failed to fetch projects", error: err_2 });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+exports.getProjectsByUser = getProjectsByUser;
+// export const createProject = async (req: Request, res: Response) => {
+//   const { title, description, groupId, dueDate, module, assigneeIds } = req.body;
+//   try {
+//     const project = await db.project.create({
+//       data: {
+//         title,
+//         description,
+//         groupId,
+//         dueDate,
+//         status: "active",
+//         module,
+//         assignees: {
+//           connect: assigneeIds.map((id: string) => ({ id })),
+//         },
+//       },
+//       include: { assignees: true },
+//     });
+//     res.status(201).json(project);
+//   } catch (err) {
+//     res.status(500).json({ message: "Failed to create project", error: err });
+//   }
+// };
 //# sourceMappingURL=projectsController.js.map
