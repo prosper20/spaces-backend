@@ -1,10 +1,20 @@
-node_modules
-# Keep environment variables out of version control
-.env
+# Node.js
+node_modules/
+dist/
 
-#others
-*.local
-.vscode
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# VS Code settings
+.vscode/
+
+# System files
 .DS_Store
-.idea
-.env*
+.idea/
+
+# Others
+*.local
