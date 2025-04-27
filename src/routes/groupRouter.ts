@@ -6,7 +6,7 @@ const groupRouter = Router();
 
 
 groupRouter.post("/groups", verifyJWT, createGroup);
-groupRouter.get("/groups", getGroupsByUser);
+groupRouter.get("/groups", verifyJWT, getGroupsByUser);
 groupRouter.get("/groups/:groupId", getGroupById);
 groupRouter.get("/groups/:groupId/dashboard", getGroupDashboardData);
 

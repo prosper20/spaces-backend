@@ -156,7 +156,7 @@ export const getGroupById = async (req: Request, res: Response) => {
             title: true,
             description: true,
             dueDate: true,
-            assignee: {
+            assignees: {
               select: {
                 id: true,
                 fullName: true,
@@ -225,7 +225,7 @@ export const getGroupDashboardData = async (req: Request, res: Response) => {
             title: true,
             description: true,
             dueDate: true,
-            assignee: {
+            assignees: {
               select: {
                 id: true,
                 fullName: true,
