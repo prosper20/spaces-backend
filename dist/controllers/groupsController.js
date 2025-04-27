@@ -36,14 +36,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGroupsByUser = exports.createGroup = void 0;
+exports.getGroupDashboardData = exports.getGroupById = exports.getGroupsByUser = exports.createGroup = void 0;
 var db_1 = require("../db");
 var createGroup = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, groupName, description, module, tags, supervisorId, creatorId, group, err_1;
+    var _a, groupName, description, purpose, module, tags, supervisorId, creatorId, group, err_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, groupName = _a.groupName, description = _a.description, module = _a.module, tags = _a.tags, supervisorId = _a.supervisorId;
+                _a = req.body, groupName = _a.groupName, description = _a.description, purpose = _a.purpose, module = _a.module, tags = _a.tags, supervisorId = _a.supervisorId;
                 creatorId = req.userId;
                 _b.label = 1;
             case 1:
@@ -52,16 +52,58 @@ var createGroup = function (req, res) { return __awaiter(void 0, void 0, void 0,
                         data: {
                             groupName: groupName,
                             description: description,
+                            purpose: purpose,
                             module: module,
                             tags: tags,
                             supervisorId: supervisorId,
                             members: {
-                                create: [{ userId: creatorId }],
+                                create: [
+                                    { userId: creatorId },
+                                ],
+                            },
+                            groupRoles: {
+                                create: [
+                                    {
+                                        title: "Group Lead",
+                                        description: "Oversees the team, assigns tasks, and ensures project timelines are met.",
+                                        userId: creatorId,
+                                    },
+                                ],
                             },
                         },
                         include: {
-                            members: true,
-                            supervisor: true,
+                            members: {
+                                include: {
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            fullName: true,
+                                            email: true,
+                                            profile_picture: true,
+                                        },
+                                    },
+                                },
+                            },
+                            groupRoles: {
+                                include: {
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            fullName: true,
+                                            email: true,
+                                            profile_picture: true,
+                                        },
+                                    },
+                                },
+                            },
+                            supervisor: {
+                                select: {
+                                    id: true,
+                                    fullName: true,
+                                    email: true,
+                                    profile_picture: true,
+                                },
+                            },
                         },
                     })];
             case 2:
@@ -70,6 +112,7 @@ var createGroup = function (req, res) { return __awaiter(void 0, void 0, void 0,
                 return [3 /*break*/, 4];
             case 3:
                 err_1 = _b.sent();
+                console.error(err_1);
                 res.status(500).json({ message: "Failed to create group", error: err_1 });
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];
@@ -93,8 +136,22 @@ var getGroupsByUser = function (req, res) { return __awaiter(void 0, void 0, voi
                             },
                         },
                         include: {
-                            supervisor: true,
-                            members: { include: { user: true } },
+                            supervisor: {
+                                select: {
+                                    id: true,
+                                    fullName: true,
+                                    email: true,
+                                    profile_picture: true,
+                                },
+                            },
+                            members: { include: { user: {
+                                        select: {
+                                            id: true,
+                                            fullName: true,
+                                            email: true,
+                                            profile_picture: true,
+                                        },
+                                    }, } },
                         },
                     })];
             case 2:
@@ -110,4 +167,218 @@ var getGroupsByUser = function (req, res) { return __awaiter(void 0, void 0, voi
     });
 }); };
 exports.getGroupsByUser = getGroupsByUser;
+var getGroupById = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var groupId, group, err_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                groupId = req.params.groupId;
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, db_1.db.group.findUnique({
+                        where: {
+                            id: groupId,
+                        },
+                        include: {
+                            supervisor: {
+                                select: {
+                                    id: true,
+                                    fullName: true,
+                                    email: true,
+                                    profile_picture: true,
+                                },
+                            },
+                            members: {
+                                include: {
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            fullName: true,
+                                            email: true,
+                                            role: true,
+                                            profile_picture: true,
+                                        },
+                                    },
+                                },
+                            },
+                            groupRoles: {
+                                include: {
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            fullName: true,
+                                            email: true,
+                                            profile_picture: true,
+                                        },
+                                    },
+                                },
+                            },
+                            tasks: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    description: true,
+                                    dueDate: true,
+                                    assignee: {
+                                        select: {
+                                            id: true,
+                                            fullName: true,
+                                            email: true,
+                                            profile_picture: true,
+                                        },
+                                    },
+                                },
+                            },
+                            projects: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    description: true,
+                                    dueDate: true,
+                                    status: true,
+                                },
+                            },
+                            sessions: {
+                                select: {
+                                    id: true,
+                                    goal: true,
+                                    date: true,
+                                    time: true,
+                                    duration: true,
+                                },
+                            },
+                            notes: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    content: true,
+                                    created_at: true,
+                                },
+                            },
+                        },
+                    })];
+            case 2:
+                group = _a.sent();
+                if (!group) {
+                    return [2 /*return*/, res.status(404).json({ message: "Group not found" })];
+                }
+                res.status(200).json(group);
+                return [3 /*break*/, 4];
+            case 3:
+                err_3 = _a.sent();
+                console.error(err_3);
+                res.status(500).json({ message: "Failed to fetch group details", error: err_3 });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+exports.getGroupById = getGroupById;
+var getGroupDashboardData = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var groupId, group, err_4;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                groupId = req.params.groupId;
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, db_1.db.group.findUnique({
+                        where: { id: groupId },
+                        select: {
+                            id: true,
+                            groupName: true,
+                            description: true,
+                            purpose: true,
+                            module: true,
+                            tags: true,
+                            tasks: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    description: true,
+                                    dueDate: true,
+                                    assignee: {
+                                        select: {
+                                            id: true,
+                                            fullName: true,
+                                            profile_picture: true,
+                                        },
+                                    },
+                                },
+                                orderBy: {
+                                    dueDate: "asc",
+                                },
+                            },
+                            members: {
+                                include: {
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            fullName: true,
+                                            email: true,
+                                            role: true,
+                                            profile_picture: true,
+                                        },
+                                    },
+                                },
+                            },
+                            sessions: {
+                                select: {
+                                    id: true,
+                                    goal: true,
+                                    date: true,
+                                    time: true,
+                                    duration: true,
+                                },
+                                orderBy: {
+                                    date: "asc",
+                                },
+                            },
+                            notes: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    created_at: true,
+                                },
+                                orderBy: {
+                                    created_at: "desc",
+                                },
+                            },
+                            chat: {
+                                select: {
+                                    id: true,
+                                    messages: {
+                                        select: {
+                                            id: true,
+                                            message: true,
+                                            created_at: true,
+                                        },
+                                        orderBy: {
+                                            created_at: "desc",
+                                        },
+                                        take: 5,
+                                    },
+                                },
+                            },
+                        },
+                    })];
+            case 2:
+                group = _a.sent();
+                if (!group) {
+                    return [2 /*return*/, res.status(404).json({ message: "Group not found" })];
+                }
+                res.status(200).json(group);
+                return [3 /*break*/, 4];
+            case 3:
+                err_4 = _a.sent();
+                console.error(err_4);
+                res.status(500).json({ message: "Failed to fetch dashboard data", error: err_4 });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+exports.getGroupDashboardData = getGroupDashboardData;
 //# sourceMappingURL=groupsController.js.map
