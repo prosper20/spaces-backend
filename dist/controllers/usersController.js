@@ -38,16 +38,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.editUser = exports.getAllUsers = void 0;
 var db_1 = require("../db");
-// Get all users with optional search and pagination
 var getAllUsers = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var search, _a, _b, page, _c, limit, parsedPage, parsedLimit, users, err_1;
+    var search, roleParam, _a, _b, page, _c, limit, parsedPage, parsedLimit, users, err_1;
     return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
                 search = req.query.search || "";
+                roleParam = req.query.role || "";
                 _a = req.query, _b = _a.page, page = _b === void 0 ? 1 : _b, _c = _a.limit, limit = _c === void 0 ? 10 : _c;
                 parsedPage = parseInt(page);
                 parsedLimit = parseInt(limit);
+                roleParam = roleParam.toUpperCase();
                 _d.label = 1;
             case 1:
                 _d.trys.push([1, 3, , 4]);
@@ -60,9 +61,16 @@ var getAllUsers = function (req, res) { return __awaiter(void 0, void 0, void 0,
                             role: true,
                         },
                         where: {
-                            OR: [
-                                { fullName: { contains: search, mode: "insensitive" } },
-                                { email: { contains: search, mode: "insensitive" } },
+                            AND: [
+                                {
+                                    OR: [
+                                        { fullName: { contains: search, mode: "insensitive" } },
+                                        { email: { contains: search, mode: "insensitive" } },
+                                    ],
+                                },
+                                roleParam && (roleParam === "STUDENT" || roleParam === "SUPERVISOR")
+                                    ? { role: roleParam }
+                                    : {},
                             ],
                         },
                         skip: (parsedPage - 1) * parsedLimit,
@@ -74,6 +82,7 @@ var getAllUsers = function (req, res) { return __awaiter(void 0, void 0, void 0,
                 return [3 /*break*/, 4];
             case 3:
                 err_1 = _d.sent();
+                console.error(err_1);
                 res.status(500).json({ message: "Failed to retrieve users", error: err_1 });
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];

@@ -1,12 +1,15 @@
 import { Request, Response } from "express";
+import { Role } from "@prisma/client";
 import { db } from "../db";
 
-// Get all users with optional search and pagination
 export const getAllUsers = async (req: Request, res: Response) => {
   const search = (req.query.search as string) || "";
+  let roleParam = (req.query.role as string) || "";
   const { page = 1, limit = 10 } = req.query;
   const parsedPage = parseInt(page as string);
   const parsedLimit = parseInt(limit as string);
+
+  roleParam = roleParam.toUpperCase();
 
   try {
     const users = await db.user.findMany({
@@ -18,9 +21,16 @@ export const getAllUsers = async (req: Request, res: Response) => {
         role: true,
       },
       where: {
-        OR: [
-          { fullName: { contains: search, mode: "insensitive" } },
-          { email: { contains: search, mode: "insensitive" } },
+        AND: [
+          {
+            OR: [
+              { fullName: { contains: search, mode: "insensitive" } },
+              { email: { contains: search, mode: "insensitive" } },
+            ],
+          },
+          roleParam && (roleParam === "STUDENT" || roleParam === "SUPERVISOR")
+            ? { role: roleParam as Role }
+            : {},
         ],
       },
       skip: (parsedPage - 1) * parsedLimit,
@@ -29,6 +39,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
     res.status(200).json({ users, numFound: users.length });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to retrieve users", error: err });
   }
 };

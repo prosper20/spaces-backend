@@ -28,6 +28,7 @@ model User {
   Group             Group[]
   Session           Session[]          @relation("sessionParticipants")
   Invite            Invite[]
+  groupRoles        GroupRole[]
 }
 
 enum Role {
@@ -36,23 +37,40 @@ enum Role {
 }
 
 model Group {
-  id           String       @id @default(cuid())
-  groupName    String
-  description  String
-  module       String?
-  tags         String[]
-  created_at   DateTime     @default(now())
-  updated_at   DateTime     @updatedAt
+  id            String         @id @default(cuid())
+  groupName     String
+  description   String
+  purpose       String          
+  module        String?
+  tags          String[]
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt()
 
-  members      GroupMember[]
-  supervisor   User?        @relation(fields: [supervisorId], references: [id])
-  supervisorId String?
+  members       GroupMember[]
+  groupRoles    GroupRole[]
+  supervisor    User?           @relation(fields: [supervisorId], references: [id])
+  supervisorId  String?
 
-  projects     Project[]
-  tasks        Task[]
-  sessions     Session[]
+  projects      Project[]
+  tasks         Task[]
+  sessions      Session[]
   chat         Conversation?
-  Invite       Invite[]
+  // chat          Conversation?   @relation(fields: [groupId], references: [id])
+  groupId       String?
+
+  invites       Invite[]
+  notes         Note[]
+}
+
+model GroupRole {
+  id          String   @id @default(cuid())
+  title       String   
+  description String   
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  group       Group    @relation(fields: [groupId], references: [id])
+  groupId     String
+  created_at  DateTime @default(now())
 }
 
 model GroupMember {
@@ -110,6 +128,16 @@ model Minute {
   session    Session?  @relation(fields: [sessionId], references: [id])
   sessionId  String?
   created_at DateTime  @default(now())
+}
+
+model Note {
+  id         String    @id @default(cuid())
+  title      String
+  content    String
+  group      Group     @relation(fields: [groupId], references: [id])
+  groupId    String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt()
 }
 
 model Invite {

@@ -4,7 +4,7 @@ import { verifyJWT } from "../middleware/verifyJWT";
 
 const usersRouter: Router = Router();
 
-usersRouter.get("/users", verifyJWT, getAllUsers);
+usersRouter.get("/users", getAllUsers);
 
 usersRouter.put("/users/:userId", verifyJWT, editUser)
 
