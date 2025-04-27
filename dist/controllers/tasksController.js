@@ -36,14 +36,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTasksByUser = exports.createTask = void 0;
+exports.getTaskStatusGraphData = exports.getAgendaForToday = exports.getWeeklyContributions = exports.getTasksByUser = exports.createTask = void 0;
 var db_1 = require("../db");
 var createTask = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, title, description, groupId, dueDate, assigneeId, task, err_1;
+    var _a, title, description, groupId, dueDate, assigneeIds, status, tag, projectId, userId, task, err_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, title = _a.title, description = _a.description, groupId = _a.groupId, dueDate = _a.dueDate, assigneeId = _a.assigneeId;
+                _a = req.body, title = _a.title, description = _a.description, groupId = _a.groupId, dueDate = _a.dueDate, assigneeIds = _a.assigneeIds, status = _a.status, tag = _a.tag, projectId = _a.projectId;
+                userId = req.userId;
                 _b.label = 1;
             case 1:
                 _b.trys.push([1, 3, , 4]);
@@ -52,16 +53,28 @@ var createTask = function (req, res) { return __awaiter(void 0, void 0, void 0, 
                             title: title,
                             description: description,
                             dueDate: dueDate,
-                            assigneeId: assigneeId,
-                            groupId: groupId,
+                            status: status,
+                            tag: tag,
+                            createdBy: { connect: { id: userId } },
+                            group: { connect: { id: groupId } },
+                            project: projectId ? { connect: { id: projectId } } : undefined,
+                            assignees: {
+                                connect: assigneeIds.map(function (id) { return ({ id: id }); }),
+                            },
                         },
                         include: {
-                            assignee: {
+                            assignees: {
                                 select: {
                                     id: true,
                                     fullName: true,
                                     email: true,
                                     profile_picture: true,
+                                },
+                            },
+                            group: {
+                                select: {
+                                    id: true,
+                                    groupName: true,
                                 },
                             },
                         },
@@ -90,11 +103,14 @@ var getTasksByUser = function (req, res) { return __awaiter(void 0, void 0, void
                 _a.trys.push([1, 3, , 4]);
                 return [4 /*yield*/, db_1.db.task.findMany({
                         where: {
-                            assigneeId: userId,
+                            assignees: {
+                                some: {
+                                    id: userId,
+                                },
+                            },
                         },
                         include: {
-                            group: true,
-                            assignee: {
+                            assignees: {
                                 select: {
                                     id: true,
                                     fullName: true,
@@ -102,6 +118,12 @@ var getTasksByUser = function (req, res) { return __awaiter(void 0, void 0, void
                                     profile_picture: true,
                                 },
                             },
+                            // group: {
+                            //   select: {
+                            //     id: true,
+                            //     groupName: true,
+                            //   },
+                            // },
                         },
                     })];
             case 2:
@@ -117,4 +139,186 @@ var getTasksByUser = function (req, res) { return __awaiter(void 0, void 0, void
     });
 }); };
 exports.getTasksByUser = getTasksByUser;
+var getWeeklyContributions = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, oneWeekAgo, tasks, err_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                userId = req.userId;
+                oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, db_1.db.task.findMany({
+                        where: {
+                            assignees: {
+                                some: {
+                                    id: userId,
+                                },
+                            },
+                            status: "COMPLETED",
+                            updated_at: {
+                                gte: oneWeekAgo,
+                            },
+                        },
+                        orderBy: {
+                            updated_at: "desc",
+                        },
+                    })];
+            case 2:
+                tasks = _a.sent();
+                res.status(200).json(tasks);
+                return [3 /*break*/, 4];
+            case 3:
+                err_3 = _a.sent();
+                res.status(500).json({ message: "Failed to fetch contributions", error: err_3 });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+exports.getWeeklyContributions = getWeeklyContributions;
+var getAgendaForToday = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, tasks, err_4;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                userId = req.userId;
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, db_1.db.task.findMany({
+                        where: {
+                            assignees: {
+                                some: {
+                                    id: userId,
+                                },
+                            },
+                            status: {
+                                in: ["TODO", "IN_PROGRESS"],
+                            },
+                        },
+                        orderBy: {
+                            created_at: "asc", // oldest first
+                        },
+                        take: 3,
+                    })];
+            case 2:
+                tasks = _a.sent();
+                res.status(200).json(tasks);
+                return [3 /*break*/, 4];
+            case 3:
+                err_4 = _a.sent();
+                res.status(500).json({ message: "Failed to fetch today's agenda", error: err_4 });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+exports.getAgendaForToday = getAgendaForToday;
+var getTaskStatusGraphData = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, _a, todo, inProgress, completed, total, err_5;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                userId = req.userId;
+                _b.label = 1;
+            case 1:
+                _b.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, Promise.all([
+                        db_1.db.task.count({
+                            where: {
+                                assignees: {
+                                    some: { id: userId },
+                                },
+                                status: "TODO",
+                            },
+                        }),
+                        db_1.db.task.count({
+                            where: {
+                                assignees: {
+                                    some: { id: userId },
+                                },
+                                status: "IN_PROGRESS",
+                            },
+                        }),
+                        db_1.db.task.count({
+                            where: {
+                                assignees: {
+                                    some: { id: userId },
+                                },
+                                status: "COMPLETED",
+                            },
+                        }),
+                    ])];
+            case 2:
+                _a = _b.sent(), todo = _a[0], inProgress = _a[1], completed = _a[2];
+                total = todo + inProgress + completed || 1;
+                res.status(200).json({
+                    todo: Math.round((todo / total) * 100),
+                    inProgress: Math.round((inProgress / total) * 100),
+                    completed: Math.round((completed / total) * 100),
+                });
+                return [3 /*break*/, 4];
+            case 3:
+                err_5 = _b.sent();
+                res.status(500).json({ message: "Failed to fetch task graph data", error: err_5 });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+exports.getTaskStatusGraphData = getTaskStatusGraphData;
+// export const createTask = async (req: Request, res: Response) => {
+//   const { title, description, groupId, dueDate, assigneeId } = req.body;
+//   try {
+//     const task = await db.task.create({
+//       data: {
+//         title,
+//         description,
+//         dueDate,
+//         assigneeId,
+//         groupId,
+//       },
+//       include: {
+//         assignee: {
+//           select: {
+//             id: true,
+//             fullName: true,
+//             email: true,
+//             profile_picture: true,
+//           },
+//         },
+//       },
+//     });
+//     res.status(201).json(task);
+//   } catch (err) {
+//     res.status(500).json({ message: "Failed to create task", error: err });
+//   }
+// };
+// export const getTasksByUser = async (req: Request, res: Response) => {
+//   const userId = req.userId;
+//   try {
+//     const tasks = await db.task.findMany({
+//       where: {
+//         assigneeId: userId,
+//       },
+//       include: {
+//         group: true,
+//         assignee: {
+//           select: {
+//             id: true,
+//             fullName: true,
+//             email: true,
+//             profile_picture: true,
+//           },
+//         },
+//       },
+//     });
+//     res.status(200).json(tasks);
+//   } catch (err) {
+//     res.status(500).json({ message: "Failed to fetch tasks", error: err });
+//   }
+// };
 //# sourceMappingURL=tasksController.js.map

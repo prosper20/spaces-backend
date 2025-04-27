@@ -220,7 +220,7 @@ var getGroupById = function (req, res) { return __awaiter(void 0, void 0, void 0
                                     title: true,
                                     description: true,
                                     dueDate: true,
-                                    assignee: {
+                                    assignees: {
                                         select: {
                                             id: true,
                                             fullName: true,
@@ -299,7 +299,7 @@ var getGroupDashboardData = function (req, res) { return __awaiter(void 0, void 
                                     title: true,
                                     description: true,
                                     dueDate: true,
-                                    assignee: {
+                                    assignees: {
                                         select: {
                                             id: true,
                                             fullName: true,
