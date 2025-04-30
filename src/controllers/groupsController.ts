@@ -17,6 +17,7 @@ export const createGroup = async (req: Request, res: Response) => {
         members: {
           create: [
             { userId: creatorId },
+            { userId: supervisorId }
           ],
         },
         groupRoles: {
@@ -28,6 +29,17 @@ export const createGroup = async (req: Request, res: Response) => {
             },
           ],
         },
+        chat: {
+          create: {
+            title: groupName,
+            participants: {
+              create: [
+                { userId: creatorId },
+                { userId: supervisorId }
+              ],
+            },
+          },
+    },
       },
       include: {
         members: {
@@ -60,6 +72,24 @@ export const createGroup = async (req: Request, res: Response) => {
             fullName: true,
             email: true,
             profile_picture: true,
+          },
+        },
+        chat: {
+          select: {
+            id: true,
+            title: true,
+            messages: {
+              select: {
+                id: true,
+                message: true,
+                created_at: true,
+                author: {
+                  select: { fullName: true },
+                },
+              },
+              orderBy: { created_at: "desc" },
+              take: 1,
+            },
           },
         },
       },
@@ -280,11 +310,14 @@ export const getGroupDashboardData = async (req: Request, res: Response) => {
                 id: true,
                 message: true,
                 created_at: true,
+                author: {
+                  select: { fullName: true },
+                },
               },
               orderBy: {
                 created_at: "desc",
               },
-              take: 5,
+              take: 1,
             },
           },
         },
@@ -302,3 +335,77 @@ export const getGroupDashboardData = async (req: Request, res: Response) => {
   }
 };
 
+
+export const joinGroup = async (req: Request, res: Response) => {
+  const { groupId } = req.body;
+  const userId = req.userId;
+
+  try {
+    const group = await db.group.findUnique({
+      where: { id: groupId },
+      include: { chat: true },
+    });
+
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    let chatUpdate;
+
+    if (group.chat) {
+      chatUpdate = {
+        update: {
+          participants: {
+            create: { userId },
+          },
+        },
+      };
+    } else {
+      chatUpdate = {
+        create: {
+          title: group.groupName,
+          participants: {
+            create: { userId },
+          },
+        },
+      };
+    }
+
+    const updatedGroup = await db.group.update({
+      where: { id: groupId },
+      data: {
+        members: { create: { userId } },
+        chat: chatUpdate,
+      },
+    });
+
+    res.status(200).json({ message: "Joined group successfully", group: updatedGroup });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to join group", error: err });
+  }
+};
+
+export const searchAllGroups = async (req: Request, res: Response) => {
+  const { query } = req.query;
+
+  try {
+    const groups = await db.group.findMany({
+      where: {
+        groupName: {
+          contains: query as string,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+        groupName: true,
+        description: true,
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+
+    res.status(200).json(groups);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to retrieve groups", error: err });
+  }
+};

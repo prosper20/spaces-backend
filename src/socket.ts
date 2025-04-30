@@ -1,24 +1,30 @@
 import socketIo from "socket.io";
 
-const activeUsers = new Set<string>();
+import { db } from "./db";
 
-const newConnection = (socket: socketIo.Socket, io: socketIo.Server) => {
+const newConnection = async (socket: socketIo.Socket, io: socketIo.Server) => {
   try {
     const userId = socket.handshake.query.id as string;
-    socket.join(userId);
 
-    activeUsers.add(userId);
-    io.to(socket.id).emit("online-users", Array.from(activeUsers));
+    const userGroups = await db.groupMember.findMany({
+      where: { userId },
+      select: { groupId: true },
+    });
+
+    userGroups.forEach(({ groupId }) => {
+      socket.join(groupId);
+    });
+
     socket.broadcast.emit("user-connected", userId);
   } catch (error) {
     console.log("Socket connection error:", error);
   }
 };
 
+
 const handleDisconnect = (socket: socketIo.Socket, io: socketIo.Server) => {
   const userId = socket.handshake.query.id as string;
 
-  activeUsers.delete(userId);
   socket.broadcast.emit("user-disconnected", userId);
 };
 
