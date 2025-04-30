@@ -100,6 +100,17 @@ export const getMessagesInConversation = async (req: Request, res: Response) => 
 
     const messages = await db.message.findMany({
       where: { conversationId },
+      include: {
+          author: {
+            select:{
+              id: true,
+              fullName: true,
+              profile_picture: true,
+              role: true,
+            }
+          },
+          files: true,
+      },
       orderBy: { created_at: "desc" },
       skip: (parsedPage - 1) * parsedLimit,
       take: parsedLimit,
