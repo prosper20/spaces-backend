@@ -201,6 +201,20 @@ model ConversationUser {
   @@unique([conversationId, userId])
 }
 
+model MessageFile {
+  id         String   @id @default(cuid())
+  name       String            
+  size       Int                
+  url        String             
+  type       String             
+  path       String             
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId  String
+
+  created_at DateTime @default(now())
+}
+
+
 model Message {
   id             String             @id @default(cuid())
   message        String
@@ -210,4 +224,6 @@ model Message {
   conversation   Conversation?      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId String?
   isEdited       Boolean            @default(false)
+
+  files          MessageFile[] 
 }
