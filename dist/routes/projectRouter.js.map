@@ -1,1 +1,0 @@
-{"version":3,"file":"projectRouter.js","sourceRoot":"","sources":["../../src/routes/projectRouter.ts"],"names":[],"mappings":";;AAAA,mCAAiC;AACjC,qDAAoD;AACpD,wEAAqF;AAErF,IAAM,aAAa,GAAG,IAAA,gBAAM,GAAE,CAAC;AAE/B,aAAa,CAAC,IAAI,CAAC,WAAW,EAAE,qBAAS,EAAE,kCAAa,CAAC,CAAC;AAC1D,aAAa,CAAC,GAAG,CAAC,WAAW,EAAE,sCAAiB,CAAC,CAAC;AAElD,kBAAe,aAAa,CAAC"}
