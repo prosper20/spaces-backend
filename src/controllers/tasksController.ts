@@ -179,59 +179,33 @@ export const getTaskStatusGraphData = async (req: Request, res: Response) => {
   }
 };
 
+export const updateTaskStatus = async (req: Request, res: Response) => {
+  const { taskId } = req.params;
+  const { status } = req.body;
 
-// export const createTask = async (req: Request, res: Response) => {
-//   const { title, description, groupId, dueDate, assigneeId } = req.body;
-//   try {
-//     const task = await db.task.create({
-//       data: {
-//         title,
-//         description,
-//         dueDate,
-//         assigneeId,
-//         groupId,
-//       },
-//       include: {
-//         assignee: {
-//           select: {
-//             id: true,
-//             fullName: true,
-//             email: true,
-//             profile_picture: true,
-//           },
-//         },
-//       },
-//     });
-//     res.status(201).json(task);
-//   } catch (err) {
-//     res.status(500).json({ message: "Failed to create task", error: err });
-//   }
-// };
+  if (!["TODO", "IN_PROGRESS", "COMPLETED"].includes(status)) {
+    return res.status(400).json({ message: "Invalid status value" });
+  }
 
-// export const getTasksByUser = async (req: Request, res: Response) => {
-//   const userId = req.userId;
+  try {
+    const updatedTask = await db.task.update({
+      where: { id: taskId },
+      data: { status },
+      include: {
+        assignees: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            profile_picture: true,
+          },
+        },
+      },
+    });
 
-//   try {
-//     const tasks = await db.task.findMany({
-//       where: {
-//         assigneeId: userId,
-//       },
-//       include: {
-//         group: true,
-//         assignee: {
-//           select: {
-//             id: true,
-//             fullName: true,
-//             email: true,
-//             profile_picture: true,
-//           },
-//         },
-//       },
-//     });
-//     res.status(200).json(tasks);
-//   } catch (err) {
-//     res.status(500).json({ message: "Failed to fetch tasks", error: err });
-//   }
-// };
-
-
+    res.status(200).json(updatedTask);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update task", error: err });
+  }
+};
