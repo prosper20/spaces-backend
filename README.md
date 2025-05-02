@@ -8,7 +8,7 @@ This is the **backend API** for the Spaces platform — a real-time, role-based 
 
 ## 🌐 Frontend Demo
 
-🧪 [Try the frontend here](https://spaces-frontend-omega.vercel.app)
+🧪 [Try the frontend here](https://spaces-frontend-lovat.vercel.app)
 
 ### 🔐 Demo Login
 
